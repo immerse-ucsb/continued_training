@@ -1,15 +1,17 @@
 ---
 title: "Latent Class Analysis Visualization"
 author: "IMMERSE Training Team"
-date: "Updated: `r format(Sys.time(), '%B %d, %Y')`"
+date: 'Updated: `r format(Sys.time(), "%B %d, %Y")`'
 output:
   html_document:
     toc: yes
     toc_float: yes
     theme: flatly
-    code_folding: "hide"
-editor_options: 
-  markdown: 
+    code_folding: hide
+  pdf_document:
+    toc: yes
+editor_options:
+  markdown:
     wrap: sentence
 ---
 
@@ -26,11 +28,12 @@ knitr::opts_chunk$set(echo = TRUE,
                       warning = FALSE,
                       message = FALSE,
                       tidy.opts=list(width.cutoff=60)) #Here, I have made it so that when you knit your .rmd, warnings and messages will not show up in the html markdown. 
+
 ```
 
 ------------------------------------------------------------------------
 
-<span style="font-size: 24px;">IMMERSE Project</span>
+[IMMERSE Project]{style="font-size: 24px;"}
 
 ![](figures/IESNewLogo.jpg){style="float: left;" width="300"}
 
@@ -75,6 +78,7 @@ library(janitor)
 library(gt)
 library(cowplot)
 library(DiagrammeR) 
+library(jtools)
 here::i_am("lca_viz.Rmd")
 ```
 
@@ -194,12 +198,11 @@ gtsave(prop_table, here("figures", "prop_table.png"))
 gtsave(prop_table, here("tables", "prop_table.docx"))
 ```
 
-
 ------------------------------------------------------------------------
 
 ### Table of Fit
 
-After completing the Latent Class enumeration step, we can move forward with creating a table of fit for each model. 
+After completing the Latent Class enumeration step, we can move forward with creating a table of fit for each model.
 
 First, extract data:
 
@@ -238,7 +241,7 @@ Then, create table:
 ```{r}
 fit_table <- allFit %>%
   gt() %>%
-  tab_header(title = md("**Model Fit Summary Table**")) %>%
+  tab_header(title = "Table 1", subtitle = md("*Model Fit Summary Table*")) %>%
   cols_label(
     Title = "Classes",
     Parameters = md("Par"),
@@ -257,9 +260,37 @@ AWE = approximate weight of evidence criterion;
 BLRT = bootstrapped likelihood ratio test p-value;
 VLMR = Vuong-Lo-Mendell-Rubin adjusted likelihood ratio test p-value;
 *cmPk* = approximate correct model probability."
-    ),
-locations = cells_title()
+    )
   ) %>%
+  cols_align(align = "center") %>%
+  opt_table_font(font = "Times New Roman") %>%
+  opt_align_table_header(align = "left") %>%
+  tab_options(
+    heading.title.font.size = px(16),
+    heading.subtitle.font.size = px(16),
+    row_group.as_column = TRUE,
+    stub.border.width = 0,
+    heading.border.bottom.color = "black",
+    column_labels.border.top.color = "black",
+    column_labels.border.bottom.color = "black",
+    table_body.border.bottom.color = "black",
+    table.border.bottom.color = "black",
+    table.border.top.color = "white",
+    table.background.color = "white"
+  ) %>%
+  tab_style(
+    style = list(
+      cell_borders(
+        sides = c("top", "bottom"),
+        color = "white",
+        weight = px(1)
+      ),
+      cell_text(align = "center"),
+      cell_fill(color = "white", alpha = NULL)
+    ),
+    locations = cells_body(columns = everything(),
+                           rows = everything())
+  ) %>% 
   tab_options(column_labels.font.weight = "bold") %>%
   fmt_number(c(3:7),
              decimals = 2) %>%
@@ -353,16 +384,22 @@ allFit %>%
   scale_x_continuous(breaks = 1:nrow(allFit)) +
   scale_colour_grey(end = .5) +
   theme_cowplot() +
-  labs(x = "Number of Classes", y = "Information Criteria Value", title = "Information Criteria") +
+  labs(
+    title = "Figure XX",
+    subtitle = "Information Criteria",
+    x = "Number of Classes",
+    y = "Information Criteria Value"
+  ) +
   theme(
-    text = element_text(family = "serif", size = 12),
-    legend.text = element_text(family="serif", size=12),
+    text = element_text(family = "sans", size = 12),
+    legend.text = element_text(family = "sans", size = 12),
     legend.key.width = unit(3, "line"),
     legend.title = element_blank(),
-    legend.position = "top"  
+    legend.position = "top",
+    plot.subtitle = element_text(face = "italic", size = 15),
+    plot.title = element_text(size = 15)
   )
 ```
-
 
 Save figure:
 
@@ -375,24 +412,40 @@ ggsave(here("figures", "info_criteria.png"), dpi=300, bg = "white", height=5, wi
 Alternative view: ICs separately
 
 ```{r}
-allFit %>% 
-  dplyr::select(1:7) %>% 
+allFit %>%
+  dplyr::select(1:7) %>%
   rowid_to_column() %>%
   pivot_longer(`LL`:`AWE`,
                names_to = "Index",
-               values_to = "ic_value") %>%  
-mutate(Index = factor(Index,
-                      levels = c ("LL", "AWE", "CAIC", "BIC", "aBIC"))) %>% 
-  ggplot(aes(x = rowid, y = ic_value,
-             color = Index, shape = Index,
-             group = Index, lty = Index)) +
+               values_to = "ic_value") %>%
+  mutate(Index = factor(Index,
+                        levels = c ("LL", "AWE", "CAIC", "BIC", "aBIC"))) %>%
+  ggplot(aes(
+    x = rowid,
+    y = ic_value,
+    color = Index,
+    shape = Index,
+    group = Index,
+    lty = Index
+  )) +
   geom_point(size = 2.0) + geom_line(size = .8) +
+  scale_x_continuous(breaks = 1:nrow(allFit)) +  
   scale_colour_grey(end = .5) +
   theme_cowplot() +
-  labs(x = "Number of Classes", y = "Information Criteria Value") +
-  theme(legend.title = element_blank(),
-        legend.position = "top") +
-  facet_wrap(~Index, scales = "free_y")
+  labs(
+    title = "Figure XX",
+    subtitle = "Information Criteria",
+    x = "Number of Classes",
+    y = "Information Criteria Value"
+  ) +
+  theme(
+    legend.title = element_blank(),
+    legend.position = "top",
+    
+    plot.subtitle = element_text(face = "italic", size = 15),
+    plot.title = element_text(size = 15)
+  ) +
+  facet_wrap( ~ Index, scales = "free_y")
 ```
 
 Save figure:
@@ -407,8 +460,8 @@ ggsave(here("figures", "info_criteria_sep.png"), dpi='retina', bg = "white", hei
 
 Automatic:
 
-Use the `plot_lca` function provided in the folder to plot the item probability plot. This function requires one argument:
-- `model_name`: The name of the Mplus `readModels` object (e.g., `output_bully$c3_bully.out`)
+Use the `plot_lca` function provided in the folder to plot the item probability plot.
+This function requires one argument: - `model_name`: The name of the Mplus `readModels` object (e.g., `output_bully$c3_bully.out`)
 
 ```{r fig.height=6, fig.width=10}
 source("plot_lca.txt")
@@ -469,32 +522,38 @@ Line Plot
 ```{r, fig.height=6, fig.width=10}
 ## Plot data
 plot_data %>%
-  ggplot(
-    aes(
-      x = variable,
-      y = est,
-      shape = class,
-      colour = class,
-      lty = class,
-      group = class
-    )
-  ) +
+  ggplot(aes(
+    x = variable,
+    y = est,
+    shape = class,
+    colour = class,
+    lty = class,
+    group = class
+  )) +
   geom_point(size = 4) + geom_line() +
-  ylim(0,1) +
-  scale_x_discrete("", labels = function(x) str_wrap(x, width = 10)) +
-  labs(title = title, y = "Probability") +
+  ylim(0, 1) +
+  scale_x_discrete(
+    "",
+    labels = function(x)
+      str_wrap(x, width = 10)
+  ) +
+  labs(title = "Figure 1",
+       subtitle = title,
+       y = "Probability") +
   theme_cowplot() +
+  scale_color_grey(start = 0, end = 0) +
   theme(
-    text = element_text(family = "serif", size = 12),
-    legend.text = element_text(family = "serif", size = 12),
+    text = element_text(family = "sans", size = 12),
+    legend.text = element_text(family = "sans", size = 12),
     legend.key.width = unit(0, "line"),
     legend.title = element_blank(),
-    legend.position = "top",    
-    axis.text.x = element_text(vjust = 1)
+    legend.position = "bottom",
+    axis.text.x = element_text(vjust = 1),
+    plot.subtitle = element_text(face = "italic", size = 15),
+    plot.title = element_text(size = 15)
   )
 
 ```
-
 
 ```{r}
 ggsave(here("figures", "custom_line_plot.png"), dpi = "retina", bg = "white", height=6, width=9, units="in")
@@ -507,56 +566,69 @@ Bar Plot:
 ```{r, fig.height=6, fig.width=10}
 ## Plot data
 plot_data %>%
-  ggplot(
-    aes(
-      x = variable,
-      y = est,
-      fill = class
-    )
+  ggplot(aes(x = variable,
+             y = est,
+             fill = class)) +
+  geom_bar(stat = "identity",
+           position = "dodge",
+           color = 'black') +
+  geom_errorbar(
+    aes(ymin = est - se, ymax = est + se),
+    size = .3,
+    width = .2,
+    position = position_dodge(.9)
   ) +
-  geom_bar(stat = "identity", position = "dodge", color = 'black') +
-    geom_errorbar(aes(ymin=est-se, ymax=est+se),
-                size=.3,    
-                width=.2,
-                position=position_dodge(.9)) +
-  geom_text(aes(label = est), 
-            family = "serif", size = 4,
-            position=position_dodge(.9),
-            vjust = -3) + # Change for location of text
-  ylim(0,1) +
-  scale_x_discrete("", labels = function(x) str_wrap(x, width = 10)) + # Adds string wrap to item names
-  labs(title = title, y = "Probability") +
+  geom_text(
+    aes(label = est),
+    family = "sans",
+    size = 4,
+    position = position_dodge(.9),
+    vjust = -3
+  ) + # Change for location of text
+  ylim(0, 1) +
+  scale_x_discrete(
+    "",
+    labels = function(x)
+      str_wrap(x, width = 10)
+  ) + # Adds string wrap to item names
+  labs(title = "Figure 1",
+       subtitle = title,
+       y = "Probability") +
   theme_cowplot() +
+  scale_fill_grey(start = 0.2, end = .9) +
   theme(
-    text = element_text(family = "serif", size = 12),
-    legend.text = element_text(family = "serif", size = 12),
-    #legend.key.width = unit(0, "line"),
+    text = element_text(family = "sans", size = 12),
+    legend.text = element_text(family = "sans", size = 12),
     legend.title = element_blank(),
-    legend.position = "top",    
-    axis.text.x = element_text(vjust = 1)
+    legend.position = "top",
+    axis.text.x = element_text(vjust = 1),
+    plot.subtitle = element_text(face = "italic", size = 15),
+    plot.title = element_text(size = 15)
   ) 
 ```
-
 
 ```{r}
 ggsave(here("figures", "custom_bar_plot.png"), dpi="retina", bg = "white", height=6, width=9, units="in")
 ```
 
-
 `ggplot2` resources:
 
-- https://ggplot2.tidyverse.org/
-  - https://ggplot2.tidyverse.org/articles/ggplot2-specs.html
-  - https://ggplot2.tidyverse.org/reference/index.html
-- https://r-graph-gallery.com/ggplot2-package.html
-- https://r-graphics.org/chapter-ggplot2
+-   [Official ggplot2 Page](https://ggplot2.tidyverse.org/){.uri}
+    -   [ggplot Functions](https://ggplot2.tidyverse.org/reference/index.html){.uri}
+    -   [Line plot](https://ggplot2.tidyverse.org/articles/ggplot2-specs.html)
+    -   [Customize Theme](https://ggplot2.tidyverse.org/reference/theme.html)
+    -   [Premade Themes](https://ggplot2.tidyverse.org/reference/ggtheme.html)
+    -   [Bar plot](https://ggplot2.tidyverse.org/reference/geom_bar.html)
+-   [Other bar plot resources](http://www.sthda.com/english/wiki/ggplot2-barplots-quick-start-guide-r-software-and-data-visualization)
+-   Other ggplot2 resources
+    -   <https://r-graph-gallery.com/ggplot2-package.html>
+    -   <https://r-graphics.org/chapter-ggplot2>
 
 ------------------------------------------------------------------------
 
 ### Classification Diagnostics
 
 Use Mplus to calculate k-class confidence intervals (Note: Change the synax to make your chosen *k*-class model):
-
 
 ```{r, eval = FALSE}
 classification  <- mplusObject(
@@ -604,7 +676,9 @@ classification_fit <- mplusModeler(classification,
                 check=TRUE, run = TRUE, hashfilename = FALSE)
 ```
 
-*Note*: Ensure that the classes did not shift during this step (i.g., Class 1 in the enumeration run is now Class 4). Evaluate output and compare the class counts and proportions for the latent classes. Using the OPTSEED function ensures replication of the best loglikelihood value run.
+*Note*: Ensure that the classes did not shift during this step (i.g., Class 1 in the enumeration run is now Class 4).
+Evaluate output and compare the class counts and proportions for the latent classes.
+Using the OPTSEED function ensures replication of the best loglikelihood value run.
 
 ------------------------------------------------------------------------
 
@@ -646,32 +720,60 @@ class_data <- data.frame(OCCk, entropy)
 Now, use `{gt}` to make a nicely formatted table
 
 ```{r}
-class_table <- class_data %>% 
+class_table <- class_data %>%
   gt() %>%
-    tab_header(
-    title = "Model Classification Diagnostics for the 3-Class Solution") %>%
-    cols_label(
-      model = md("*k*-Class"),
-      kclass = md("*k*-Class Proportions"),
-      CI = "95% CI",
-      mcaPk = md("McaP*k*"),
-      avePPk = md("AvePP*k*"),
-      OCCk = md("OCC*k*"),
-      entropy = "Entropy") %>% 
-    sub_missing(7,
+  tab_header(title = "Table XX", subtitle = md("*Model Classification Diagnostics for the 3-Class Solution*")) %>%
+  cols_label(
+    model = md("*k*-Class"),
+    kclass = md("*k*-Class Proportions"),
+    CI = "95% CI",
+    mcaPk = md("McaP*k*"),
+    avePPk = md("AvePP*k*"),
+    OCCk = md("OCC*k*"),
+    entropy = "Entropy"
+  ) %>%
+  sub_missing(7,
               missing_text = "") %>%
-    tab_footnote(
+  tab_footnote(
     footnote = md(
       "*Note.* McaP*k* = Modal class assignment proportion; AvePP*k* = Average posterior class probabilities; OCC*k* = Odds of correct classification"
     )
-  ) %>% 
-  cols_align(align = "center") %>% 
-  opt_align_table_header(align = "left") %>% 
+  ) %>%
+  cols_align(align = "center") %>%
+  opt_table_font(font = "Times New Roman") %>%
+  opt_align_table_header(align = "left") %>%
+  tab_options(
+    heading.title.font.size = px(16),
+    heading.subtitle.font.size = px(16),
+    row_group.as_column = TRUE,
+    stub.border.width = 0,
+    heading.border.bottom.color = "black",
+    column_labels.border.top.color = "black",
+    column_labels.border.bottom.color = "black",
+    table_body.border.bottom.color = "black",
+    table.border.bottom.color = "black",
+    table.border.top.color = "white",
+    table.background.color = "white"
+  ) %>%
+  tab_style(
+    style = list(
+      cell_borders(
+        sides = c("top", "bottom"),
+        color = "white",
+        weight = px(1)
+      ),
+      cell_text(align = "center"),
+      cell_fill(color = "white", alpha = NULL)
+    ),
+    locations = cells_body(columns = everything(),
+                           rows = everything())
+  ) %>%
+  cols_align(align = "center") %>%
+  opt_align_table_header(align = "left") %>%
   gt::tab_options(table.font.names = "Times New Roman")
 
 class_table
 ```
-
 
 ------------------------------------------------------------------------
 
