@@ -274,7 +274,7 @@ VLMR = Vuong-Lo-Mendell-Rubin adjusted likelihood ratio test p-value;
     column_labels.border.top.color = "black",
     column_labels.border.bottom.color = "black",
     table_body.border.bottom.color = "black",
-    table.border.bottom.color = "black",
+    table.border.bottom.color = "white",
     table.border.top.color = "white",
     table.background.color = "white"
   ) %>%
@@ -351,7 +351,7 @@ fit_table
 
 Save table:
 
-```{r, eval = FALSE}
+```{r}
 # save as img
 gtsave(fit_table, here("figures", "fit_table.png"))
 
@@ -751,7 +751,7 @@ class_table <- class_data %>%
     column_labels.border.top.color = "black",
     column_labels.border.bottom.color = "black",
     table_body.border.bottom.color = "black",
-    table.border.bottom.color = "black",
+    table.border.bottom.color = "white",
     table.border.top.color = "white",
     table.background.color = "white"
   ) %>%
