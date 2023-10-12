@@ -116,7 +116,7 @@ gt() %>%
 
 ### Latent Variable Diagram
 
-```{r, echo=FALSE, eval=TRUE, fig.align='center'}
+```{r, eval=TRUE, fig.align='center'}
 
 grViz(" digraph cfa_model {
 
@@ -143,6 +143,9 @@ grViz(" digraph cfa_model {
  
  }") 
 ```
+
+
+Alternative: draw.io
 
 ------------------------------------------------------------------------
 
@@ -489,7 +492,7 @@ model <- output_bully$c3_bully.out
 title <- "Bullying Probability Plot"
 
 # Item names
-items <- c("Harassment: Disability",
+item_labels <- c("Harassment: Disability",
            "Harassment: Race", 
            "Harassment: Sex",
            "School staff: Counselor",
@@ -497,22 +500,25 @@ items <- c("Harassment: Disability",
            "School staff: Law Enforcement")
 
 # Class labels
-labels <- c("Reported Harrassment (Low), \nStaff (High)",
+class_labels <- c("Reported Harrassment (Low), \nStaff (High)",
             "Reported Harrassment (High), \nStaff (Low)",
             "Reported Harrassment (Low), \nStaff (Low)")
 
 
 #### END EDIT ####
+```
 
-# Extract data needed for plotting
+Extract data needed for plotting (don't edit):
+
+```{r}
+# Extract data needed for plotting (don't edit here)
 plot_data <- data.frame(model$parameters$probability.scale) %>% 
   filter(category == 2) %>% 
-  mutate(variable = fct_inorder(param),
+  mutate(items = fct_inorder(param),
          class = fct_inorder(LatentClass)) %>% 
-  mutate(variable = factor(variable, labels = items),
-         class = factor(class, labels = labels)) %>% 
-  dplyr::select(est, se, class, variable)
-
+  mutate(items = factor(items, labels = item_labels),
+         class = factor(class, labels = class_labels)) %>% 
+  dplyr::select(est, se, class, items)
 ```
 
 ------------------------------------------------------------------------
@@ -523,7 +529,7 @@ Line Plot
 ## Plot data
 plot_data %>%
   ggplot(aes(
-    x = variable,
+    x = items,
     y = est,
     shape = class,
     colour = class,
@@ -566,7 +572,7 @@ Bar Plot:
 ```{r, fig.height=6, fig.width=10}
 ## Plot data
 plot_data %>%
-  ggplot(aes(x = variable,
+  ggplot(aes(x = items,
              y = est,
              fill = class)) +
   geom_bar(stat = "identity",
