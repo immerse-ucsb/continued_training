@@ -85,13 +85,13 @@ Item Labels:
 model <- model
 
 # Title (Copy and paste the title above)
-title <- ""
+title <- "Bullying Probability Plot"
 
 # Item labels (C/P the item labels above)
-item_labels <- c("","","","","","")
+item_labels <- c("Harassment: Disability","Harassment: Race","Harassment: Sex","School staff: Counselor","School staff: Psychologist","School staff: Law Enforcement")
 
 # Class labels (C/P class labels above)
-class_labels <- c("", "", "")
+class_labels <- c("Reported Harrassment (Low), \nStaff (High)", "Reported Harrassment (High), \nStaff (Low)", "Reported Harrassment (Low), \nStaff (Low)")
 
 
 #### END EDIT ####
@@ -117,12 +117,12 @@ plot_data <- data.frame(model$parameters$probability.scale) %>%
 ## Plot data
 plot_data %>%
   ggplot(aes( # Specify variable names here
-      x = , # Item names
-      y = , # Probability values
-      group = , # Latent classes (group by latent classes, shape of point, color of line, line type)
-      shape = ,
-      colour = ,
-      lty = 
+      x = items, # Item names
+      y = est, # Probability values
+      group = class, # Latent classes (group by latent classes, shape of point, color of line, line type)
+      shape = class,
+      colour = class,
+      lty = class 
   )) +
   geom_point(size = 4) +  # Add points to plot
   geom_line() + # Adds line to plot
@@ -136,10 +136,10 @@ plot_data %>%
        subtitle = title,
        y = "Probability") +
   theme_cowplot() + # Pre-made theme
-  scale_color_grey(start = 0, end = .5) +
-  # scale_color_manual(values=c('orange', 'pink', 'red')) +
+  scale_color_grey(start = 0, end = 0.5) +
+  # scale_color_manual(values=c('orange', 'pink', 'red'))+
   # scale_shape_manual(values = c(7, 8, 9)) +
-  # scale_linetype_manual(values = c("solid","twodashed","dotted")) +
+  # scale_linetype_manual(values = c("solid","twodash","dotted")) 
   theme(
     text = element_text(family = "sans", size = 12), # All text elements (except legend)
     legend.text = element_text(family = "sans", size = 12), # Legend text
@@ -194,8 +194,7 @@ plot_data %>%
     axis.text.x = element_text(vjust = 1),
     plot.subtitle = element_text(face = "italic", size = 15),
     plot.title = element_text(size = 15)
-  ) #+
-  #coord_flip() # Flips bar plot (to the y axis)
+  ) 
 ```
 
 
